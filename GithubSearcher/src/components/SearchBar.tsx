@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     padding: Padding.low,
     backgroundColor: `${Colors.Light}`,
     marginHorizontal: Padding.low,
-    marginVertical : Padding.veryLow,
+    marginVertical : Padding.low,
     borderRadius: 12,
     flexDirection: 'row',
   },
