@@ -1,6 +1,6 @@
 enum Colors {
-    Primary = "#007bff",
-    Secondary = "#6c757d",
+    Primary = "black",
+    Secondary = "white",
     Success = "#28a745",
     Danger = "#dc3545",
     Warning = "#ffc107",
