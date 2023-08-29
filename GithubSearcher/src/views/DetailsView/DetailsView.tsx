@@ -27,9 +27,13 @@ export function DetailsView({route, navigation}: Props) {
   const data = route.params?.data;
   const type = route.params?.type;
 
-  const renderItem = ({item}: {item: any}) => <View style ={styles.links} >
-                                                  <Text>{item}</Text>
-                                              </View>;
+  const renderItem = ({item}: {item: any}) => 
+                                                  <TouchableOpacity onPress={()=>openUrl(item)}>
+                                                    <View style = {styles.links} >
+                                                    <Text style={styles.link_text}>{item}</Text>
+                                                  </View>
+                                                  </TouchableOpacity>
+                                              ;
 
   const openUrl = (url: string) => {
     Linking.openURL(url);
@@ -38,7 +42,7 @@ export function DetailsView({route, navigation}: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       {type === 'user' ? (
-        <View>
+        <View style = {styles.page} >
           <View style={styles.header}>
             <NetworkAvatar uri={`${data.avatar_url}`} size={100} />
             <View>
@@ -49,12 +53,33 @@ export function DetailsView({route, navigation}: Props) {
 
             </View>
           </View>
+
           <Text style={styles.text} >Links</Text>
-          <FlatList data={Object.values(data).slice(7)} renderItem={renderItem} ></FlatList>
+          <FlatList data={Object.values(data).slice(7,-3)} renderItem={renderItem} ></FlatList>
+
 
         </View>
       ) : (
-        <Text style={styles.text}></Text>
+        <View style = {styles.page} >
+          <View style={styles.header}>
+
+            <View>
+              <TouchableOpacity onPress={() => openUrl(data.html_url)}>
+                <Text style={styles.text}> {`${data.full_name} 🔗`} </Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => openUrl(data.html_url)}>
+                <Text style={styles.text}> {`${data.owner.login} 🔗`} </Text>
+              </TouchableOpacity>
+              <Text style={styles.small_text}> {`Description:  ${data.description}`} </Text>
+
+            </View>
+          </View>
+
+          <Text style={styles.text} >Links</Text>
+          <FlatList data={Object.values(data).slice(10,-35)} renderItem={renderItem} ></FlatList>
+
+
+        </View>
       )}
     </SafeAreaView>
   );
@@ -68,6 +93,12 @@ const styles = StyleSheet.create({
     height: '100%',
   },
 
+  page : {
+    height : '100%'
+  }
+
+,
+
   header: {
     alignContent: 'center',
     justifyContent: 'flex-start',
@@ -80,10 +111,28 @@ const styles = StyleSheet.create({
     borderColor: Colors.Dark,
     flexDirection: 'row',
   },
+  links: {
+      backgroundColor : Colors.Dark,
+      padding : Padding.low,
+      margin : Padding.veryLow,
+      borderRadius : Padding.low,
+  },
+
   text: {
     color: Colors.Primary,
     fontSize: 20,
     fontFamily: Fonts.PoppinsLight,
     marginLeft: Padding.low,
   },
+
+  small_text: {
+    color: Colors.Primary,
+    fontSize: 10,
+    fontFamily: Fonts.PoppinsLight,
+    marginLeft: Padding.low,
+  },
+  link_text: {
+    color: Colors.Secondary,
+    fontFamily : Fonts.PoppinsLight,
+  }
 });
