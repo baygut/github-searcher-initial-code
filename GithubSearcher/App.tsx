@@ -5,51 +5,44 @@
  * @format
  */
 
-import React from 'react';
 
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import {SearchView} from './src/views/SearchView/SearchView';
+import {SettingsView} from './src/views/SettingsView/SettingsView';
+import {DetailsView} from './src/views/DetailsView/DetailsView';
+import {  createContext } from "react";
+import { UserResponse } from './src/services/user-service/UserModel';
+import { RepoResponse } from './src/services/repo-service/RepoModel';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+export type RootStackParamList = {
+  Search: undefined;
+  Settings: {
+    userSwitch: any;
+    setUserSwitch : any;
+    repoSwitch: any;
+    setRepoSwitch : any;
+  };
+  Details: {data : UserResponse | RepoResponse} | undefined;
+};
 
-import { SearchView } from './src/views/SearchView/SearchView';
+const RootStack = createStackNavigator<RootStackParamList>();
+
 
 function App(): JSX.Element {
   return (
-    <SearchView/>
+    <NavigationContainer>
+      <RootStack.Navigator initialRouteName="Search">
+        <RootStack.Screen
+          name="Search"
+          options={{headerShown: false}}
+          component={SearchView}
+        />
+        <RootStack.Screen name="Settings" children={SettingsView} />
+        <RootStack.Screen name="Details" component={DetailsView} />
+      </RootStack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
 
 export default App;
