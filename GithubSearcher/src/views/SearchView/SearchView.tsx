@@ -9,6 +9,7 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
+ActivityIndicator,
 } from 'react-native';
 
 import RepoSwitchIcon from '../../../assets/icons/RepoSwitchIcon';
@@ -43,7 +44,7 @@ const Item = ({title, color, type, uri, onTap}: ItemProps) => (
           resizeMode={'contain'}></Image>
       )}
     </View>
-    <Text style={styles.title}>{title}</Text>
+    <Text style={styles.title} ellipsizeMode={"tail"} numberOfLines={1} >{title}</Text>
 
     <View style={styles.type}>
       <Text style={styles.type_title}> {type.toUpperCase()} </Text>
@@ -59,28 +60,37 @@ export function SearchView(): JSX.Element {
   const [repos, setRepos] = useState<RepoResponse>();
   const [duration, setDuration] = useState(0);
   const navigation = useNavigation();
+  const [loading, setLoading] = useState(false);
   
 
 
   const onSubmitEditing = () => {
+    setRepos(undefined);
+    setUsers(undefined);
     const fetchResults = async () => {
+        setLoading(true);
+        setTimeout(() => {
+            
+        }, 5000);
       if (query) {
         const start = Date.now();
-        const repoResponse = await RepoService.fetchRepos(query);
-        const userResponse = await UserService.fetchUsers(query);
+        const repoResponse = repoSwitch ? await RepoService.fetchRepos(query) : null;
+        const userResponse = userSwitch ? await UserService.fetchUsers(query) : null;
         const end = Date.now();
         setDuration(end - start);
-        if ('error' in repoResponse) {
+        if (repoResponse && 'error' in repoResponse) {
           console.error('An error occurred:', repoResponse.error); //TODO!
-        } else if ('error' in userResponse) {
+        } else if (userResponse && 'error' in userResponse) {
           console.error('An error occurred:', userResponse.error); //TODO!
         } else {
-          setRepos(repoResponse);
-          setUsers(userResponse);
+          repoResponse &&  setRepos(repoResponse);
+          userResponse && setUsers(userResponse);
         }
       }
+      setLoading(false);
     };
     fetchResults();
+
   };
 
   type ListItem = User | Repo; // Common interface for
@@ -95,7 +105,7 @@ export function SearchView(): JSX.Element {
   return (
     <SafeAreaView style={styles.safe}>
       <Header />
-      <Text>{`${userSwitch}`} {`${repoSwitch}`}</Text>
+
       <SearchBar
         onChangeText={setQuery}
         onSubmitEditing={onSubmitEditing}
@@ -116,12 +126,13 @@ export function SearchView(): JSX.Element {
       />
       <View></View>
       <Text style={styles.desc}>
-        {' '}
-        {combinedList.length} results found in {duration / 1000} seconds. {'('}{' '}
-        {users?.items.length} users , {repos?.items.length} repos {')'}{' '}
+
+        {combinedList.length ?? 0} results found in {duration / 1000} seconds. {'('}
+        {users?.items.length ?? 0} users , {repos?.items.length ?? 0} repos {')'}
       </Text>
-  
-      <FlatList
+        {
+            loading ? <ActivityIndicator style={styles.indicator} />:
+            <FlatList
         data={combinedList}
         renderItem={({item, index}) => {
           return 'type' in item ? (
@@ -144,6 +155,8 @@ export function SearchView(): JSX.Element {
         }}
         keyExtractor={item => `${item.id}`}
       />
+        }
+      
     </SafeAreaView>
   );
 }
@@ -157,6 +170,11 @@ const styles = StyleSheet.create({
   },
   search_row: {
     flexDirection: 'row',
+  },
+  indicator : {
+        marginTop : 'auto',
+        marginBottom : 'auto'
+
   },
 
   container: {
@@ -176,6 +194,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: Fonts.PoppinsLight,
     marginLeft: Padding.low,
+    paddingRight :'auto',
+    width : '70%'
   },
   icons: {
     backgroundColor: Colors.Secondary,
@@ -192,6 +212,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Primary,
     borderRadius: 10,
     padding: Padding.veryLow,
+
   },
   type_title: {
     fontSize: 10,
