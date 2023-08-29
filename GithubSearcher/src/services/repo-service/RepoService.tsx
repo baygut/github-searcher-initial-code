@@ -9,7 +9,7 @@ class RepoService {
       const response = await axios.get(`${URL_MANAGER.REPO_BASE_URL}${query})`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching repos:', error);
+
       return { data: null, error: error };;
     }
   }
