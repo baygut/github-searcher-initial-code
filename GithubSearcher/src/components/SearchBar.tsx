@@ -6,12 +6,14 @@ import CancelIcon from '../../assets/icons/Cancelcon';
 import Colors from '../utils/colors';
 import Padding from '../utils/padding';
 import {TouchableOpacity} from 'react-native';
+import FilterIcon from '../../assets/icons/FilterIcon';
 
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
   onSubmitEditing: () => void;
+  onFilterTapped : () =>void;
 }
 
 const handleCancel = (onChangeText: (text: string) => void) => {
@@ -23,6 +25,7 @@ export function SearchBar({
   onChangeText,
   placeholder = 'Search...',
   onSubmitEditing,
+  onFilterTapped,
 }: SearchBarProps): JSX.Element {
   return (
     <View style={styles.main}>
@@ -35,6 +38,7 @@ export function SearchBar({
         placeholder={placeholder}
         onSubmitEditing={() => onSubmitEditing()}
       />
+      <View style = {styles.iconRow}>
       {value ? (
         <TouchableOpacity
           onPress={() => handleCancel(onChangeText)}
@@ -42,6 +46,12 @@ export function SearchBar({
           <CancelIcon color={Colors.Dark} size={Padding.medium} />
         </TouchableOpacity>
       ) : null}
+      <TouchableOpacity
+          onPress={() => onFilterTapped()}
+          >
+          <FilterIcon color={Colors.Dark} size={Padding.medium} />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -62,9 +72,13 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   cancelIcon: {
-    marginLeft: 'auto',
+    marginRight : Padding.low
   },
   searchIcon: {
     marginRight: Padding.low,
   },
+  iconRow : {
+    flexDirection : 'row',
+    marginLeft : 'auto'
+  }
 });
