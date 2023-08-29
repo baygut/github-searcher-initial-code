@@ -12,8 +12,8 @@ import {SearchView} from './src/views/SearchView/SearchView';
 import {SettingsView} from './src/views/SettingsView/SettingsView';
 import {DetailsView} from './src/views/DetailsView/DetailsView';
 import {  createContext } from "react";
-import { UserResponse } from './src/services/user-service/UserModel';
-import { RepoResponse } from './src/services/repo-service/RepoModel';
+import { User, UserResponse } from './src/services/user-service/UserModel';
+import { Repo, RepoResponse } from './src/services/repo-service/RepoModel';
 
 export type RootStackParamList = {
   Search: undefined;
@@ -23,7 +23,7 @@ export type RootStackParamList = {
     repoSwitch: any;
     setRepoSwitch : any;
   };
-  Details: {data : UserResponse | RepoResponse} | undefined;
+  Details: {data : any, type : string} | undefined;
 };
 
 const RootStack = createStackNavigator<RootStackParamList>();

@@ -1,4 +1,4 @@
-import {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   FlatList,
   SafeAreaView,
@@ -9,7 +9,7 @@ import {
   TextInput,
   Image,
   TouchableOpacity,
-ActivityIndicator,
+  ActivityIndicator,
 } from 'react-native';
 
 import RepoSwitchIcon from '../../../assets/icons/RepoSwitchIcon';
@@ -28,29 +28,36 @@ import {Repo, RepoResponse} from '../../services/repo-service/RepoModel';
 import RepoService from '../../services/repo-service/RepoService';
 
 import {useNavigation} from '@react-navigation/native';
+import { NetworkAvatar } from '../../components/NetworkAvatar';
 
-type ItemProps = {title: string; color: string; type: string; uri: string, onTap : ()=> void};
+
+type ItemProps = {
+  title: string;
+  color: string;
+  type: string;
+  uri: string;
+  onTap: () => void;
+};
 
 const Item = ({title, color, type, uri, onTap}: ItemProps) => (
-    <TouchableOpacity activeOpacity={0.7} >
-          <View style={styles.item}>
-    <View style={styles.icons}>
-      {type !== 'user' ? (
-        <RepoSwitchIcon color={color} />
-      ) : (
-        <Image
-          source={{uri: uri}}
-          style={styles.image}
-          resizeMode={'contain'}></Image>
-      )}
-    </View>
-    <Text style={styles.title} ellipsizeMode={"tail"} numberOfLines={1} >{title}</Text>
+  <TouchableOpacity activeOpacity={0.7} onPress={onTap}>
+    <View style={styles.item}>
+      <View style={styles.icons}>
+        {type !== 'user' ? (
+          <RepoSwitchIcon color={color} />
+        ) : (
+          <NetworkAvatar uri={uri} ></NetworkAvatar>
+        )}
+      </View>
+      <Text style={styles.title} ellipsizeMode={'tail'} numberOfLines={1}>
+        {title}
+      </Text>
 
-    <View style={styles.type}>
-      <Text style={styles.type_title}> {type.toUpperCase()} </Text>
+      <View style={styles.type}>
+        <Text style={styles.type_title}> {type.toUpperCase()} </Text>
+      </View>
     </View>
-  </View>
-    </TouchableOpacity>
+  </TouchableOpacity>
 );
 
 //repo presents true, users presents tru
@@ -61,21 +68,21 @@ export function SearchView(): JSX.Element {
   const [duration, setDuration] = useState(0);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
-  
-
 
   const onSubmitEditing = () => {
     setRepos(undefined);
     setUsers(undefined);
     const fetchResults = async () => {
-        setLoading(true);
-        setTimeout(() => {
-            
-        }, 5000);
+      setLoading(true);
+      setTimeout(() => {}, 5000);
       if (query) {
         const start = Date.now();
-        const repoResponse = repoSwitch ? await RepoService.fetchRepos(query) : null;
-        const userResponse = userSwitch ? await UserService.fetchUsers(query) : null;
+        const repoResponse = repoSwitch
+          ? await RepoService.fetchRepos(query)
+          : null;
+        const userResponse = userSwitch
+          ? await UserService.fetchUsers(query)
+          : null;
         const end = Date.now();
         setDuration(end - start);
         if (repoResponse && 'error' in repoResponse) {
@@ -83,14 +90,13 @@ export function SearchView(): JSX.Element {
         } else if (userResponse && 'error' in userResponse) {
           console.error('An error occurred:', userResponse.error); //TODO!
         } else {
-          repoResponse &&  setRepos(repoResponse);
+          repoResponse && setRepos(repoResponse);
           userResponse && setUsers(userResponse);
         }
       }
       setLoading(false);
     };
     fetchResults();
-
   };
 
   type ListItem = User | Repo; // Common interface for
@@ -113,12 +119,11 @@ export function SearchView(): JSX.Element {
           navigation.navigate(
             'Settings' as never,
             {
-                userSwitch,
-                setUserSwitch,
-                repoSwitch,
-                setRepoSwitch,
-                  
-            } as never
+              userSwitch,
+              setUserSwitch,
+              repoSwitch,
+              setRepoSwitch,
+            } as never,
           );
         }}
         value={query}
@@ -126,37 +131,54 @@ export function SearchView(): JSX.Element {
       />
       <View></View>
       <Text style={styles.desc}>
-
-        {combinedList.length ?? 0} results found in {duration / 1000} seconds. {'('}
-        {users?.items.length ?? 0} users , {repos?.items.length ?? 0} repos {')'}
+        {combinedList.length ?? 0} results found in {duration / 1000} seconds.{' '}
+        {'('}
+        {users?.items.length ?? 0} users , {repos?.items.length ?? 0} repos{' '}
+        {')'}
       </Text>
-        {
-            loading ? <ActivityIndicator style={styles.indicator} />:
-            <FlatList
-        data={combinedList}
-        renderItem={({item, index}) => {
-          return 'type' in item ? (
-            <Item
-              type={'user'}
-              color={``}
-              title={item.login}
-              uri={item.avatar_url}
-              onTap ={()=> {}}
-            />
-          ) : (
-            <Item
-              type={'repo'}
-              color={stringToColor(item.full_name)}
-              title={item.full_name}
-              uri={''}
-              onTap ={()=> {}}
-            />
-          );
-        }}
-        keyExtractor={item => `${item.id}`}
-      />
-        }
-      
+      {loading ? (
+        <ActivityIndicator style={styles.indicator} />
+      ) : (
+        <FlatList
+          data={combinedList}
+          renderItem={({item, index}) => {
+            return 'type' in item ? (
+              <Item
+                type={'user'}
+                color={``}
+                title={item.login}
+                uri={item.avatar_url}
+                onTap={() => {
+                  navigation.navigate(
+                    'Details' as never,
+                    {
+                      data: item,
+                      type: 'user',
+                    } as never,
+                  );
+                }}
+              />
+            ) : (
+              <Item
+                type={'repo'}
+                color={stringToColor(item.full_name)}
+                title={item.full_name}
+                uri={''}
+                onTap={() => {
+                  navigation.navigate(
+                    'Details' as never,
+                    {
+                      data: item,
+                      type: 'repo',
+                    } as never,
+                  );
+                }}
+              />
+            );
+          }}
+          keyExtractor={item => `${item.id}`}
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -171,10 +193,9 @@ const styles = StyleSheet.create({
   search_row: {
     flexDirection: 'row',
   },
-  indicator : {
-        marginTop : 'auto',
-        marginBottom : 'auto'
-
+  indicator: {
+    marginTop: 'auto',
+    marginBottom: 'auto',
   },
 
   container: {
@@ -194,8 +215,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: Fonts.PoppinsLight,
     marginLeft: Padding.low,
-    paddingRight :'auto',
-    width : '70%'
+    paddingRight: 'auto',
+    width: '70%',
   },
   icons: {
     backgroundColor: Colors.Secondary,
@@ -212,18 +233,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Primary,
     borderRadius: 10,
     padding: Padding.veryLow,
-
   },
   type_title: {
     fontSize: 10,
     fontFamily: Fonts.KanitBold,
     color: Colors.Secondary,
   },
-  image: {
-    width: 24,
-    height: 24,
-    borderRadius: 24,
-  },
+
   desc: {
     fontFamily: Fonts.PoppinsLight,
     fontSize: 12,
