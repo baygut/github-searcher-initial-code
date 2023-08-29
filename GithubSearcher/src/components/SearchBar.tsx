@@ -5,34 +5,43 @@ import SearchIcon from '../../assets/icons/SearchIcon';
 import CancelIcon from '../../assets/icons/Cancelcon';
 import Colors from '../utils/colors';
 import Padding from '../utils/padding';
-import { TouchableOpacity } from "react-native";
+import {TouchableOpacity} from 'react-native';
 
 interface SearchBarProps {
   value: string;
   onChangeText: (text: string) => void;
   placeholder?: string;
+  onSubmitEditing: () => void;
 }
 
-const handleCancel = (onChangeText : (text: string)=>void) => {
-    onChangeText("");
-}
+const handleCancel = (onChangeText: (text: string) => void) => {
+  onChangeText('');
+};
 
 export function SearchBar({
   value,
   onChangeText,
   placeholder = 'Search...',
+  onSubmitEditing,
 }: SearchBarProps): JSX.Element {
   return (
     <View style={styles.main}>
-      <View style={styles.searchIcon} ><SearchIcon color={Colors.Dark} size={Padding.medium} /></View>
+      <View style={styles.searchIcon}>
+        <SearchIcon color={Colors.Dark} size={Padding.medium} />
+      </View>
       <TextInput
         onChangeText={onChangeText}
         value={value}
         placeholder={placeholder}
+        onSubmitEditing={() => onSubmitEditing()}
       />
-      {
-        value ? <TouchableOpacity onPress={()=> handleCancel(onChangeText)} style={styles.cancelIcon} ><CancelIcon color={Colors.Dark} size={Padding.medium}/></TouchableOpacity> : null
-      }
+      {value ? (
+        <TouchableOpacity
+          onPress={() => handleCancel(onChangeText)}
+          style={styles.cancelIcon}>
+          <CancelIcon color={Colors.Dark} size={Padding.medium} />
+        </TouchableOpacity>
+      ) : null}
     </View>
   );
 }
@@ -43,7 +52,7 @@ const styles = StyleSheet.create({
     padding: Padding.low,
     backgroundColor: `${Colors.Light}`,
     marginHorizontal: Padding.low,
-    marginVertical : Padding.low,
+    marginVertical: Padding.low,
     borderRadius: 12,
     flexDirection: 'row',
   },
@@ -52,11 +61,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'black',
   },
-  cancelIcon : {
-    marginLeft: 'auto'
-  }
-  ,
-  searchIcon : {
+  cancelIcon: {
+    marginLeft: 'auto',
+  },
+  searchIcon: {
     marginRight: Padding.low,
-  }
+  },
 });
