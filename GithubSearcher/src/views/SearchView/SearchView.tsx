@@ -11,104 +11,141 @@ import {
 } from 'react-native';
 import RepoIcon from '../../../assets/icons/RepoIcon';
 import UserIcon from '../../../assets/icons/UserIcon';
+import RepoSwitchIcon from '../../../assets/icons/RepoSwitchIcon';
 import UserService from '../../services/user-service/UserService';
 
 import Header from '../../components/Header';
 import {SearchBar} from '../../components/SearchBar';
 import Colors from '../../utils/colors';
 
-import generateRandomColor from '../../functions/randomColorGenerator';
+import generateRandomColors from '../../functions/randomColorGenerator';
 import Padding from '../../utils/padding';
 import Fonts from '../../utils/fonts';
 
 
-import { UserResponse } from '../../services/user-service/UserModel';
+import { User, UserResponse } from '../../services/user-service/UserModel';
 import { Repo, RepoResponse } from '../../services/repo-service/RepoModel';
 import RepoService from '../../services/repo-service/RepoService';
 
-const DATA = [
-  {
-    id: 'bd7acbea-c1b1-46c2-aed5-3ad53abb28ba',
-    title: 'First Item',
-    type: 'repo',
-  },
-  {
-    id: '3ac68afc-c605-48d3-a4f8-fbd91aa97f63',
-    title: 'Second Item',
-    type: 'user',
-  },
-  {
-    id: '58694a0f-3da1-471f-bd96-145571e29d72',
-    title: 'Third Item',
-    type: 'repo',
-  },
-];
+import Toggle from 'react-native-toggle-element';
 
-type ItemProps = {title: string; color: string; type: string};
 
-const Item = ({title, color, type}: ItemProps) => (
+type ItemProps = {title: string; color: string; type: string, uri : string};
+
+const Item = ({title, color, type, uri}: ItemProps) => (
   <View style={styles.item}>
     <View style={styles.icons}>
-      {type === 'user' ? (
-        <UserIcon color={color} />
+      {type !== 'user' ? (
+        <RepoSwitchIcon color={color} />
       ) : (
-        <RepoIcon color={color} />
+        <Image source={{uri:uri}} style={styles.image} resizeMode={'contain'} ></Image>
+        
       )}
+      
     </View>
     <Text style={styles.title}>{title}</Text>
-
+        
     <View style={styles.type}>
       <Text style={styles.type_title}> {type.toUpperCase()} </Text>
     </View>
   </View>
 );
 
+//repo presents true, users presents true
+
 export function SearchView(): JSX.Element {
     const [query, setQuery] = useState('');
     const [users, setUsers] = useState<UserResponse>();
     const [repos, setRepos] = useState<RepoResponse>();
+    const colors : string[] = generateRandomColors(repos?.items.length ?? 1);
+    const [toggleValue, setToggleValue] = useState(false);
 
     const onSubmitEditing = () => {
         const fetchResults = async ()=> {
-            const userResponse = await RepoService.fetchRepos(query);
-            userResponse && setRepos(userResponse);
-            const repoResponse = await UserService.fetchUsers(query);
-            repoResponse && setUsers(repoResponse);
+        if(query) {
+            const repoResponse = await RepoService.fetchRepos(query);
+            const userResponse = await UserService.fetchUsers(query);
+            if ('error' in repoResponse) {
+                console.error('An error occurred:', repoResponse.error); //TODO!
+            } else if ('error' in userResponse){
+                console.error('An error occurred:', userResponse.error); //TODO!
+            }
+            else {
+                setRepos(repoResponse);
+                setUsers(userResponse);
+            }
+            }
         }
         fetchResults();
-        console.log(users?.items);
-        console.log(repos);
     }
     
+    type ListItem = User | Repo; // Common interface for
 
-
+    const combinedList: ListItem[] = [...users?.items ?? [], ...repos?.items ?? []];
 
   return (
     <SafeAreaView style={styles.safe}>
       <Header />
+      <View style={styles.search_row} >
+      <View style ={styles.search}>
       <SearchBar
         onChangeText={setQuery}
         onSubmitEditing = {onSubmitEditing}
         value={query}
         placeholder="Search a user or a repository..."
       />
+      </View>
+      <View style={styles.toggle} >
+      <Toggle
+        value={toggleValue}
+        onPress={newState => setToggleValue(!toggleValue)}
+        thumbActiveComponent={<RepoSwitchIcon size={15}/>}
+        thumbInActiveComponent={
+          <UserIcon size={15} />
+        }
+        trackBar={{
+          activeBackgroundColor: '#9ee3fb',
+          inActiveBackgroundColor: '#3c4145',
+          borderActiveColor: '#86c3d7',
+          borderInActiveColor: '#1c1c1c',
+          borderWidth: 5,
+          width: 50,
+          height: 20,
+
+
+        }}
+        thumbButton={{
+            width: 35,
+            height : 35,
+            activeBackgroundColor : Colors.Secondary,
+            inActiveBackgroundColor : Colors.Secondary,
+            borderWidth :10,
+
+        }}
+      />
+      </View>
+      </View>
       <View></View>
       <FlatList
-        data={DATA}
-        renderItem={({item}) => {
-          if (item.title.toUpperCase().includes(query.toUpperCase())) {
+        data={combinedList}
+        renderItem={({item, index}) => {
             return (
-              <Item
-                type={item.type}
-                color={generateRandomColor()}
-                title={item.title}
-              />
+                ('type' in item) ? <Item
+                type={"user"}
+                color={`${colors.at(index)}`}
+                title={item.login}
+                uri={item.avatar_url}
+              /> : <Item
+              type={"repo"}
+              color={`${colors.at(index)}`}
+              title={item.full_name}
+              uri={""}
+            />
+
+
             );
-          } else {
-            return null;
-          }
         }}
-        keyExtractor={item => item.id}
+        keyExtractor={item => `${item.id}`}
       />
     </SafeAreaView>
   );
@@ -121,7 +158,12 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Secondary,
     height: '100%',
   },
-
+  search_row: {
+    flexDirection : 'row'
+  },
+  search :{
+    width : '85%',
+  },
   container: {
     flex: 1,
     marginTop: StatusBar.currentHeight || 0,
@@ -145,6 +187,11 @@ const styles = StyleSheet.create({
     padding: Padding.low,
     borderRadius: 24,
   },
+  toggle : {
+    justifyContent : 'center',
+    marginRight : Padding.low,
+    marginLeft : 'auto',
+  },
   type: {
     marginLeft: 'auto',
     backgroundColor: Colors.Primary,
@@ -156,8 +203,11 @@ const styles = StyleSheet.create({
     fontFamily: Fonts.KanitBold,
     color: Colors.Secondary,
   },
+  image : {
+    width : 24,
+    height : 24,
+    borderRadius : 24
+  }
 });
-function useCallback(arg0: (newQuery: any) => void, arg1: never[]) {
-    throw new Error('Function not implemented.');
-}
+
 
