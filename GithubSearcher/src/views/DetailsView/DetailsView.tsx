@@ -7,23 +7,55 @@ import {
   Text,
   View,
   TextInput,
+  Linking,
   Image,
+  Touchable,
+  TouchableOpacity,
 } from 'react-native';
 
 import Colors from '../../utils/colors';
 import Padding from '../../utils/padding';
 import Fonts from '../../utils/fonts';
-import { RootStackParamList} from '../../../App';
+import {RootStackParamList} from '../../../App';
 
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import type {NativeStackScreenProps} from '@react-navigation/native-stack';
+import {NetworkAvatar} from '../../components/NetworkAvatar';
+
 type Props = NativeStackScreenProps<RootStackParamList, 'Details'>;
 
 export function DetailsView({route, navigation}: Props) {
   const data = route.params?.data;
+  const type = route.params?.type;
+
+  const renderItem = ({item}: {item: any}) => <View style ={styles.links} >
+                                                  <Text>{item}</Text>
+                                              </View>;
+
+  const openUrl = (url: string) => {
+    Linking.openURL(url);
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
-        <Text>{`${data}`}</Text>
+      {type === 'user' ? (
+        <View>
+          <View style={styles.header}>
+            <NetworkAvatar uri={`${data.avatar_url}`} size={100} />
+            <View>
+              <TouchableOpacity onPress={() => openUrl(data.html_url)}>
+                <Text style={styles.text}> {`${data.login} 🔗`} </Text>
+              </TouchableOpacity>
+              <Text style={styles.text}> {`ID:  ${data.id}`} </Text>
+
+            </View>
+          </View>
+          <Text style={styles.text} >Links</Text>
+          <FlatList data={Object.values(data).slice(7)} renderItem={renderItem} ></FlatList>
+
+        </View>
+      ) : (
+        <Text style={styles.text}></Text>
+      )}
     </SafeAreaView>
   );
 }
@@ -31,65 +63,27 @@ export function DetailsView({route, navigation}: Props) {
 const styles = StyleSheet.create({
   safe: {
     alignContent: 'center',
-    justifyContent: 'center',
-    backgroundColor: Colors.Secondary,
+    justifyContent: 'flex-start',
+    backgroundColor: Colors.Light,
     height: '100%',
   },
-  search_row: {
-    flexDirection : 'row'
-  },
 
-  container: {
-    flex: 1,
-    marginTop: StatusBar.currentHeight || 0,
-  },
-  item: {
-    backgroundColor: Colors.Light,
-    borderRadius: 12,
-    padding: 20,
-    marginVertical: Padding.veryLow,
-    marginHorizontal: Padding.low,
-    flexDirection: 'row',
+  header: {
+    alignContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
+    backgroundColor: Colors.Light,
+    padding: Padding.medium,
+    margin: Padding.low,
+    borderRadius: Padding.low,
+    borderWidth: 5,
+    borderColor: Colors.Dark,
+    flexDirection: 'row',
   },
-  title: {
-    fontSize: 15,
+  text: {
+    color: Colors.Primary,
+    fontSize: 20,
     fontFamily: Fonts.PoppinsLight,
     marginLeft: Padding.low,
   },
-  icons: {
-    backgroundColor: Colors.Secondary,
-    padding: Padding.low,
-    borderRadius: 24,
-  },
-  toggle : {
-    justifyContent : 'center',
-    marginRight : Padding.low,
-    marginLeft : 'auto',
-  },
-  type: {
-    marginLeft: 'auto',
-    backgroundColor: Colors.Primary,
-    borderRadius: 10,
-    padding: Padding.veryLow,
-  },
-  type_title: {
-    fontSize: 10,
-    fontFamily: Fonts.KanitBold,
-    color: Colors.Secondary,
-  },
-  image : {
-    width : 24,
-    height : 24,
-    borderRadius : 24
-  }
-,
-  desc : {
-    fontFamily : Fonts.PoppinsLight,
-    fontSize : 12,
-
-    textAlign : 'center'
-  }
 });
-
-
