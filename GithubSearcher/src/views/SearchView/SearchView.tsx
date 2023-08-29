@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+import Snackbar from 'react-native-snackbar';
 
 import RepoSwitchIcon from '../../../assets/icons/RepoSwitchIcon';
 import UserService from '../../services/user-service/UserService';
@@ -40,6 +41,11 @@ export function SearchView(): JSX.Element {
   const [duration, setDuration] = useState(0);
   const navigation = useNavigation();
   const [loading, setLoading] = useState(false);
+  const options = {
+                    text: "Error occured while fetching data. Please try again later.",
+                    backgroundColor : Colors.Dark,
+
+  }
 
   const onSubmitEditing = () => {
     setRepos(undefined);
@@ -58,9 +64,9 @@ export function SearchView(): JSX.Element {
         const end = Date.now();
         setDuration(end - start);
         if (repoResponse && 'error' in repoResponse) {
-          console.error('An error occurred:', repoResponse.error); //TODO!
+          Snackbar.show(options)
         } else if (userResponse && 'error' in userResponse) {
-          console.error('An error occurred:', userResponse.error); //TODO!
+            Snackbar.show(options)
         } else {
           repoResponse && setRepos(repoResponse);
           userResponse && setUsers(userResponse);
