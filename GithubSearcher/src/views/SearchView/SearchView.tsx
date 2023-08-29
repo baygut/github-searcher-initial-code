@@ -28,37 +28,9 @@ import {Repo, RepoResponse} from '../../services/repo-service/RepoModel';
 import RepoService from '../../services/repo-service/RepoService';
 
 import {useNavigation} from '@react-navigation/native';
-import { NetworkAvatar } from '../../components/NetworkAvatar';
 
+import { SeachResultItem } from '../../components/SearchResultItem';
 
-type ItemProps = {
-  title: string;
-  color: string;
-  type: string;
-  uri: string;
-  onTap: () => void;
-};
-
-const Item = ({title, color, type, uri, onTap}: ItemProps) => (
-  <TouchableOpacity activeOpacity={0.7} onPress={onTap}>
-    <View style={styles.item}>
-      <View style={styles.icons}>
-        {type !== 'user' ? (
-          <RepoSwitchIcon color={color} />
-        ) : (
-          <NetworkAvatar uri={uri} ></NetworkAvatar>
-        )}
-      </View>
-      <Text style={styles.title} ellipsizeMode={'tail'} numberOfLines={1}>
-        {title}
-      </Text>
-
-      <View style={styles.type}>
-        <Text style={styles.type_title}> {type.toUpperCase()} </Text>
-      </View>
-    </View>
-  </TouchableOpacity>
-);
 
 //repo presents true, users presents tru
 export function SearchView(): JSX.Element {
@@ -99,7 +71,7 @@ export function SearchView(): JSX.Element {
     fetchResults();
   };
 
-  type ListItem = User | Repo; // Common interface for
+  type ListItem = User | Repo;
 
   const combinedList: ListItem[] = [
     ...(users?.items ?? []),
@@ -143,7 +115,7 @@ export function SearchView(): JSX.Element {
           data={combinedList}
           renderItem={({item, index}) => {
             return 'type' in item ? (
-              <Item
+              <SeachResultItem
                 type={'user'}
                 color={``}
                 title={item.login}
@@ -159,7 +131,7 @@ export function SearchView(): JSX.Element {
                 }}
               />
             ) : (
-              <Item
+              <SeachResultItem
                 type={'repo'}
                 color={stringToColor(item.full_name)}
                 title={item.full_name}
@@ -202,43 +174,14 @@ const styles = StyleSheet.create({
     flex: 1,
     marginTop: StatusBar.currentHeight || 0,
   },
-  item: {
-    backgroundColor: Colors.Light,
-    borderRadius: 12,
-    padding: 20,
-    marginVertical: Padding.veryLow,
-    marginHorizontal: Padding.low,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 15,
-    fontFamily: Fonts.PoppinsLight,
-    marginLeft: Padding.low,
-    paddingRight: 'auto',
-    width: '70%',
-  },
-  icons: {
-    backgroundColor: Colors.Secondary,
-    padding: Padding.low,
-    borderRadius: 24,
-  },
+
+
   toggle: {
     justifyContent: 'center',
     marginRight: Padding.low,
     marginLeft: 'auto',
   },
-  type: {
-    marginLeft: 'auto',
-    backgroundColor: Colors.Primary,
-    borderRadius: 10,
-    padding: Padding.veryLow,
-  },
-  type_title: {
-    fontSize: 10,
-    fontFamily: Fonts.KanitBold,
-    color: Colors.Secondary,
-  },
+
 
   desc: {
     fontFamily: Fonts.PoppinsLight,
