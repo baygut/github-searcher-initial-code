@@ -1,11 +1,11 @@
-import React, {useState} from 'react';
-import {TextInput, View, StyleSheet} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { TextInput, View, StyleSheet } from 'react-native';
 
 import SearchIcon from '../../assets/icons/SearchIcon';
 import CancelIcon from '../../assets/icons/Cancelcon';
 import Colors from '../utils/colors';
 import Padding from '../utils/padding';
-import {TouchableOpacity} from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import FilterIcon from '../../assets/icons/FilterIcon';
 
 interface SearchBarProps {
@@ -13,12 +13,8 @@ interface SearchBarProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   onSubmitEditing: () => void;
-  onFilterTapped : () =>void;
+  onFilterTapped: () => void;
 }
-
-const handleCancel = (onChangeText: (text: string) => void) => {
-  onChangeText('');
-};
 
 export function SearchBar({
   value,
@@ -27,6 +23,27 @@ export function SearchBar({
   onSubmitEditing,
   onFilterTapped,
 }: SearchBarProps): JSX.Element {
+  const [timer, setTimer] = useState<NodeJS.Timeout | null>(null);
+
+  const handleCancel = () => {
+    onChangeText('');
+  };
+
+  const debounce = (text: string) => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    const newTimer = setTimeout(() => {
+      onSubmitEditing();
+    }, 1000);
+
+    setTimer(newTimer);
+  };
+
+  useEffect(() => {
+    debounce(value);
+  }, [value]);
+
   return (
     <View style={styles.main}>
       <View style={styles.searchIcon}>
@@ -36,25 +53,21 @@ export function SearchBar({
         onChangeText={onChangeText}
         value={value}
         placeholder={placeholder}
-        onSubmitEditing={() => onSubmitEditing()}
       />
-      <View style = {styles.iconRow}>
-      {value ? (
-        <TouchableOpacity
-          onPress={() => handleCancel(onChangeText)}
-          style={styles.cancelIcon}>
-          <CancelIcon color={Colors.Dark} size={Padding.medium} />
-        </TouchableOpacity>
-      ) : null}
-      <TouchableOpacity
-          onPress={() => onFilterTapped()}
-          >
+      <View style={styles.iconRow}>
+        {value ? (
+          <TouchableOpacity onPress={handleCancel} style={styles.cancelIcon}>
+            <CancelIcon color={Colors.Dark} size={Padding.medium} />
+          </TouchableOpacity>
+        ) : null}
+        <TouchableOpacity onPress={onFilterTapped}>
           <FilterIcon color={Colors.Dark} size={Padding.medium} />
         </TouchableOpacity>
       </View>
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   main: {
     alignItems: 'center',
@@ -72,13 +85,13 @@ const styles = StyleSheet.create({
     color: 'black',
   },
   cancelIcon: {
-    marginRight : Padding.low
+    marginRight: Padding.low,
   },
   searchIcon: {
     marginRight: Padding.low,
   },
-  iconRow : {
-    flexDirection : 'row',
-    marginLeft : 'auto'
-  }
+  iconRow: {
+    flexDirection: 'row',
+    marginLeft: 'auto',
+  },
 });
